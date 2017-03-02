@@ -37,8 +37,8 @@ int comp_count;					// Component of texture
 
 unsigned char* img_data;		// image data
 
-mat4 mvp,mvp2, projection,
-view, cube, cube2;			// Model View Projection
+mat4 mvp,mvp2, mvp3, mvp4, projection,
+view, cube, cube2, cube3, cube4;			// Model View Projection
 
 Font font;						// Game font
 
@@ -85,27 +85,52 @@ void Game::run()
 			{
 				// Set Model Rotation
 				cube = translate(cube, glm::vec3(-0.1f, 0, 0));
+				cube2 = translate(cube2, vec3(-0.1f, 0, 0));
+				cube3 = translate(cube3, vec3(-0.1f, 0, 0));
 			}
 
 			else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
 			{
 				// Set Model Rotation
-				cube = translate(cube, glm::vec3(0.3f, 0, 0));
+				cube = translate(cube, glm::vec3(0.1f, 0, 0));
+				cube2 = translate(cube2, vec3(0.1f, 0, 0));
+				cube3 = translate(cube3, vec3(0.1f, 0, 0));
 			}
 
 			else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
 			{
 				
-				cube2 = translate(cube2, glm::vec3(0.0f, 0.3f, 0.0f));
+				cube = translate(cube, glm::vec3(0.0f, 0.1, 0));
+				cube2 = translate(cube2, vec3(0.0f, 0.1, 0));
+				cube3 = translate(cube3, vec3(0.0f, 0.1, 0));
 			}
 
-			
+			else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
+			{
 
-			//else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
-			//{
-			//	// Set Model Rotation
-			//	model = rotate(model, 0.01f, glm::vec3(1, 0, 0)); // Rotate
-			//}
+				cube = translate(cube, glm::vec3(0.0f, -0.1, 0));
+				cube2 = translate(cube2, vec3(0.0f, -0.1, 0));
+				cube3 = translate(cube3, vec3(0.0f, -0.1, 0));
+			}
+
+			else if (sf::Keyboard::isKeyPressed(sf::Keyboard::X))
+			{
+				// Set Model Rotation
+				cube = rotate(cube, 0.01f, glm::vec3(1, 0, 0)); // Rotate
+				cube2 = rotate(cube2, 0.01f, glm::vec3(1, 0, 0)); // Rotate
+				cube3= rotate(cube3, 0.01f, glm::vec3(1, 0, 0)); // Rotate
+			}
+
+			else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z))
+			{
+				// Set Model Rotation
+				cube = rotate(cube, -0.01f, glm::vec3(1, 0, 0)); // Rotate
+				cube2 = rotate(cube2, -0.01f, glm::vec3(1, 0, 0)); // Rotate
+				cube3 = rotate(cube3, -0.01f, glm::vec3(1, 0, 0)); // Rotate
+			}
+			cube4 = translate(cube2, glm::vec3(0.0f, 0.0f, -0.1f));
+
+
 		}
 		update();
 		render();
@@ -300,6 +325,14 @@ void Game::initialize()
 		1.0f					// Identity Matrix
 	);
 
+	cube3 = mat4(
+		1.0f
+	);
+
+	cube4 = mat4(
+		1.0f
+	);
+
 	// Enable Depth Test
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
@@ -307,6 +340,10 @@ void Game::initialize()
 
 	// Load Font
 	font.loadFromFile(".//Assets//Fonts//BBrick.ttf");
+
+	cube = translate(cube, vec3(-5, 0, 0));
+	cube3 = translate(cube, vec3(3, 0, 0));
+	cube4 = translate(cube2, vec3(0, 0, -3));
 }
 
 void Game::update()
@@ -319,8 +356,8 @@ void Game::update()
 	// To alter Camera modify view & projection
 	mvp = projection * view * cube;
 	mvp2 = projection * view * cube2;
-
-	cube2 = translate(cube2, glm::vec3(0.0f, 0.0f, 0.001f));
+	mvp3 = projection * view * cube3;
+	mvp4 = projection * view * cube4;
 }
 
 void Game::render()
@@ -340,11 +377,7 @@ void Game::render()
 	int x = Mouse::getPosition(window).x;
 	int y = Mouse::getPosition(window).y;
 
-	string hud = "Time: ";
-		/*+ string(toString(x))
-		+ "]["
-		+ string(toString(y))
-		+ "]";*/
+	string hud = "controls: \n Z X to control rotation \n arrow keys for movement ";
 
 	Text text(hud, font);
 
@@ -398,6 +431,9 @@ void Game::render()
 
 	drawCube(mvp);
 	drawCube(mvp2);
+	drawCube(mvp3);
+	drawCube(mvp4);
+
 	window.display();
 
 	// Disable Arrays
