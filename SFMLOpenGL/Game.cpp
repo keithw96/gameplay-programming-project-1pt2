@@ -37,8 +37,8 @@ int comp_count;					// Component of texture
 
 unsigned char* img_data;		// image data
 
-mat4 mvp, projection, 
-		view, model;			// Model View Projection
+mat4 mvp,mvp2, projection,
+view, cube, cube2;			// Model View Projection
 
 Font font;						// Game font
 
@@ -84,20 +84,22 @@ void Game::run()
 			else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
 			{
 				// Set Model Rotation
-				model = translate(model, glm::vec3(-0.1f, 0, 0));
+				cube = translate(cube, glm::vec3(-0.1f, 0, 0));
 			}
 
 			else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
 			{
 				// Set Model Rotation
-				model = translate(model, glm::vec3(0.3f, 0, 0));
+				cube = translate(cube, glm::vec3(0.3f, 0, 0));
 			}
 
-			//else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
-			//{
-			//	// Set Model Rotation
-			//	model = rotate(model, -0.01f, glm::vec3(1, 0, 0)); // Rotate
-			//}
+			else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
+			{
+				
+				cube2 = translate(cube2, glm::vec3(0.0f, 0.3f, 0.0f));
+			}
+
+			
 
 			//else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
 			//{
@@ -290,9 +292,13 @@ void Game::initialize()
 		);
 
 	// Model matrix
-	model = mat4(
+	cube = mat4(
 		1.0f					// Identity Matrix
 		);
+
+	cube2 = mat4(
+		1.0f					// Identity Matrix
+	);
 
 	// Enable Depth Test
 	glEnable(GL_DEPTH_TEST);
@@ -311,7 +317,10 @@ void Game::update()
 	// Update Model View Projection
 	// For mutiple objects (cubes) create multiple models
 	// To alter Camera modify view & projection
-	mvp = projection * view * model;
+	mvp = projection * view * cube;
+	mvp2 = projection * view * cube2;
+
+	cube2 = translate(cube2, glm::vec3(0.0f, 0.0f, 0.001f));
 }
 
 void Game::render()
@@ -331,18 +340,18 @@ void Game::render()
 	int x = Mouse::getPosition(window).x;
 	int y = Mouse::getPosition(window).y;
 
-	/*string hud = "Heads Up Display ["
-		+ string(toString(x))
+	string hud = "Time: ";
+		/*+ string(toString(x))
 		+ "]["
 		+ string(toString(y))
-		+ "]";
+		+ "]";*/
 
 	Text text(hud, font);
 
-	text.setColor(sf::Color(255, 255, 255, 170));
+	text.setColor(sf::Color(0, 0, 255, 255));
 	text.setPosition(50.f, 50.f);
 
-	window.draw(text);*/
+	window.draw(text);
 
 	// Restore OpenGL render states
 	// https://www.sfml-dev.org/documentation/2.0/classsf_1_1RenderTarget.php#a8d1998464ccc54e789aaf990242b47f7
@@ -387,32 +396,8 @@ void Game::render()
 	glBufferSubData(GL_ARRAY_BUFFER, 3 * VERTICES * sizeof(GLfloat), 4 * COLORS * sizeof(GLfloat), colors);
 	glBufferSubData(GL_ARRAY_BUFFER, ((3 * VERTICES) + (4 * COLORS)) * sizeof(GLfloat), 2 * UVS * sizeof(GLfloat), uvs);
 
-	// Send transformation to shader mvp uniform [0][0] is start of array
-	glUniformMatrix4fv(mvpID, 1, GL_FALSE, &mvp[0][0]);
-
-	// Set Active Texture .... 32 GL_TEXTURE0 .... GL_TEXTURE31
-	glActiveTexture(GL_TEXTURE0);
-	glUniform1i(textureID, 0); // 0 .... 31
-
-	// Set the X, Y and Z offset (this allows for multiple cubes via different shaders)
-	// Experiment with these values to change screen positions
-	glUniform1f(x_offsetID, 0.00f);
-	glUniform1f(y_offsetID, 0.00f);
-	glUniform1f(z_offsetID, 0.00f);
-
-	// Set pointers for each parameter (with appropriate starting positions)
-	// https://www.khronos.org/opengles/sdk/docs/man/xhtml/glVertexAttribPointer.xml
-	glVertexAttribPointer(positionID, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	glVertexAttribPointer(colorID, 4, GL_FLOAT, GL_FALSE, 0, (VOID*)(3 * VERTICES * sizeof(GLfloat)));
-	glVertexAttribPointer(uvID, 2, GL_FLOAT, GL_FALSE, 0, (VOID*)(((3 * VERTICES) + (4 * COLORS)) * sizeof(GLfloat)));
-	
-	// Enable Arrays
-	glEnableVertexAttribArray(positionID);
-	glEnableVertexAttribArray(colorID);
-	glEnableVertexAttribArray(uvID);
-
-	// Draw Element Arrays
-	glDrawElements(GL_TRIANGLES, 3 * INDICES, GL_UNSIGNED_INT, NULL);
+	drawCube(mvp);
+	drawCube(mvp2);
 	window.display();
 
 	// Disable Arrays
@@ -447,5 +432,40 @@ void Game::unload()
 	glDeleteBuffers(1, &vbo);		// Delete Vertex Buffer
 	glDeleteBuffers(1, &vib);		// Delete Vertex Index Buffer
 	stbi_image_free(img_data);		// Free image stbi_image_free(..)
+}
+
+void Game::drawCube(mat4 &cube)
+{
+	// VBO Data....vertices, colors and UV's appended
+	glBufferSubData(GL_ARRAY_BUFFER, 0 * VERTICES * sizeof(GLfloat), 3 * VERTICES * sizeof(GLfloat), vertices);
+	glBufferSubData(GL_ARRAY_BUFFER, 3 * VERTICES * sizeof(GLfloat), 4 * COLORS * sizeof(GLfloat), colors);
+	glBufferSubData(GL_ARRAY_BUFFER, ((3 * VERTICES) + (4 * COLORS)) * sizeof(GLfloat), 2 * UVS * sizeof(GLfloat), uvs);
+
+	// Send transformation to shader mvp uniform [0][0] is start of array
+	glUniformMatrix4fv(mvpID, 1, GL_FALSE, &cube[0][0]);
+
+	// Set Active Texture .... 32 GL_TEXTURE0 .... GL_TEXTURE31
+	glActiveTexture(GL_TEXTURE0);
+	glUniform1i(textureID, 0); // 0 .... 31
+
+							   // Set the X, Y and Z offset (this allows for multiple cubes via different shaders)
+							   // Experiment with these values to change screen positions
+	glUniform1f(x_offsetID, 0.00f);
+	glUniform1f(y_offsetID, 0.00f);
+	glUniform1f(z_offsetID, 0.00f);
+
+	// Set pointers for each parameter (with appropriate starting positions)
+	// https://www.khronos.org/opengles/sdk/docs/man/xhtml/glVertexAttribPointer.xml
+	glVertexAttribPointer(positionID, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(colorID, 4, GL_FLOAT, GL_FALSE, 0, (VOID*)(3 * VERTICES * sizeof(GLfloat)));
+	glVertexAttribPointer(uvID, 2, GL_FLOAT, GL_FALSE, 0, (VOID*)(((3 * VERTICES) + (4 * COLORS)) * sizeof(GLfloat)));
+
+	// Enable Arrays
+	glEnableVertexAttribArray(positionID);
+	glEnableVertexAttribArray(colorID);
+	glEnableVertexAttribArray(uvID);
+
+	// Draw Element Arrays
+	glDrawElements(GL_TRIANGLES, 3 * INDICES, GL_UNSIGNED_INT, NULL);
 }
 

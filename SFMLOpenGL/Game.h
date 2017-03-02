@@ -37,6 +37,7 @@ private:
 	void update();
 	void render();
 	void unload();
+	void drawCube(mat4 &model);
 };
 
 #endif
