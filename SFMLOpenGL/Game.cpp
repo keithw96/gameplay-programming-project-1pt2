@@ -1,6 +1,5 @@
 #include <Game.h>
 #include <Cube.h>
-
 // Helper to convert Number to String for HUD
 template <typename T>
 string toString(T number)
@@ -91,21 +90,20 @@ void Game::run()
 			else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
 			{
 				// Set Model Rotation
-				
-				model = rotate(model, -0.01f, glm::vec3(0, 1, 0)); // Rotate
+				model = translate(model, glm::vec3(0.3f, 0, 0));
 			}
 
-			else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
-			{
-				// Set Model Rotation
-				model = rotate(model, -0.01f, glm::vec3(1, 0, 0)); // Rotate
-			}
+			//else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
+			//{
+			//	// Set Model Rotation
+			//	model = rotate(model, -0.01f, glm::vec3(1, 0, 0)); // Rotate
+			//}
 
-			else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
-			{
-				// Set Model Rotation
-				model = rotate(model, 0.01f, glm::vec3(1, 0, 0)); // Rotate
-			}
+			//else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
+			//{
+			//	// Set Model Rotation
+			//	model = rotate(model, 0.01f, glm::vec3(1, 0, 0)); // Rotate
+			//}
 		}
 		update();
 		render();
@@ -333,7 +331,7 @@ void Game::render()
 	int x = Mouse::getPosition(window).x;
 	int y = Mouse::getPosition(window).y;
 
-	string hud = "Heads Up Display ["
+	/*string hud = "Heads Up Display ["
 		+ string(toString(x))
 		+ "]["
 		+ string(toString(y))
@@ -344,7 +342,7 @@ void Game::render()
 	text.setColor(sf::Color(255, 255, 255, 170));
 	text.setPosition(50.f, 50.f);
 
-	window.draw(text);
+	window.draw(text);*/
 
 	// Restore OpenGL render states
 	// https://www.sfml-dev.org/documentation/2.0/classsf_1_1RenderTarget.php#a8d1998464ccc54e789aaf990242b47f7
